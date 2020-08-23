@@ -1,3 +1,4 @@
+//refered https://github.com/serenity-rs/serenity/blob/current/examples/e01_basic_ping_bot/
 use std::io;
 
 use serenity::{
