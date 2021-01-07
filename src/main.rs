@@ -6,6 +6,7 @@ use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
+    voice::{Handler, LockedAudio, ffmpeg}
 };
 extern crate regex;
 use regex::Regex;
