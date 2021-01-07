@@ -1,11 +1,15 @@
 //refered https://github.com/serenity-rs/serenity/blob/current/examples/e01_basic_ping_bot/
+
 use std::io;
 
 use serenity::{
     async_trait,
     model::{channel::Message, gateway::Ready},
     prelude::*,
+    voice::{Handler, LockedAudio, ffmpeg}
 };
+extern crate regex;
+use regex::Regex;
 
 struct Handler;
 
@@ -17,16 +21,34 @@ impl EventHandler for Handler {
     // Event handlers are dispatched through a threadpool, and so multiple
     // events can be dispatched simultaneously.
     async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "/ping" {
-            // Sending a message can fail, due to a network error, an
-            // authentication error, or lack of permissions to post in the
-            // channel, so log to stdout when some error happens, with a
-            // description of it.
+       if msg.content == "/ping" {
+            println!("Shard {}", ctx.shard_id);
+
             if let Err(why) = msg.channel_id.say(&ctx.http, "Pong!").await {
                 println!("Error sending message: {:?}", why);
             }
         }
+        let re = Regex::new(r"/([^']+)-([^']+)\s+(\d+),(\d+)").unwrap();
+        let caps = re.captures(&msg.content).unwrap();
+
+        if &caps[1] == "bit_calc"{
+            let a =  &caps[3].trim().parse::<u32>().unwrap();
+            let b = &caps[4].trim().parse::<u32>().unwrap();
+            if &caps[2] == "or"{
+            let calc_c = a | b;
+            if let Err(why) = msg.channel_id.say(&ctx.http, calc_c.to_string()).await {
+                println!("Error sending message: {:?}", why);
+            }
+        }else if &caps[2] == "and"{
+            let calc_c = a & b;
+            if let Err(why) = msg.channel_id.say(&ctx.http, calc_c.to_string()).await {
+                println!("Error sending message: {:?}", why);
+            }
+        }
+      }
     }
+
+
 
     // Set a handler to be called on the `ready` event. This is called when a
     // shard is booted, and a READY payload is sent by Discord. This payload
@@ -36,7 +58,7 @@ impl EventHandler for Handler {
     // In this case, just print what the current user's username is.
     async fn ready(&self, _: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
-    }
+  }
 }
 
 #[tokio::main]
